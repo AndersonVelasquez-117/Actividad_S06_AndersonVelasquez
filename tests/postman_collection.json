@@ -1,0 +1,459 @@
+{
+  "info": {
+    "_postman_id": "508e24d7-1206-4579-b466-9e76db863253",
+    "name": "Bloque B",
+    "description": "## Bloque B — Pruebas de Seguridad OWASP API Top 10\n\nEsta colección contiene un conjunto de pruebas de seguridad diseñadas para evaluar vulnerabilidades comunes en APIs REST y GraphQL, siguiendo las categorías del **OWASP API Security Top 10**. Las pruebas están orientadas a una API vulnerable por diseño (como crAPI u similar) y cubren escenarios tanto de acceso autorizado como de acceso rechazado.\n\n---\n\n## Categorías de pruebas\n\n- **BOLA (Broken Object Level Authorization):** Verifica el control de acceso a nivel de objeto, incluyendo un escenario autorizado y uno rechazado.\n- **BFLA (Broken Function Level Authorization):** Evalúa el control de acceso a nivel de función, con casos de acceso permitido y denegado.\n- **Mass Assignment:** Prueba la asignación masiva de propiedades para detectar manipulación indebida de atributos en los objetos de la API.\n- **Validación de esquema:** Comprueba que la API rechaza correctamente solicitudes con esquemas de datos inválidos.\n- **Limitación de solicitudes (Rate Limiting):** Verifica que la API aplica restricciones ante un exceso de solicitudes en un período de tiempo.\n- **Actualización de token:** Prueba el flujo de renovación o actualización del token de autenticación.\n- **Restricción de puertos:** Confirma que el acceso al puerto 8000 es rechazado según la política de seguridad.\n- **GraphQL:** Incluye pruebas de consultas GraphQL válidas y solicitudes mal formadas (*bad request*).\n\n---\n\n## Autenticación\n\nLa colección utiliza autenticación basada en **JWT (JSON Web Token)** y **Bearer Token**. Los tokens se gestionan mediante las siguientes variables de colección:\n\n- `{{json_web_token_0zs6}}`\n- `{{json_web_token_0j87}}`\n- `{{json_web_token_0no2}}`\n- `{{bearer_token_1040}}`\n\nAsegúrate de configurar estas variables con los valores correspondientes antes de ejecutar las pruebas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "35529959"
+  },
+  "item": [
+    {
+      "name": "Prueba BOLA autorizada",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code es 200 OK (Consulta legítima de BOLA)\", function () {\r\n    pm.response.to.have.status(200);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-User-Email",
+            "value": "userA@test.com"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8443/api/orders/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "api",
+            "orders",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prueba BOLA rechazada",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code es 403 Forbidden (BOLA Bloqueado)\", function () {\r\n    pm.response.to.have.status(403);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-User-Email",
+            "value": "userA@test.com"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8443/api/orders/2",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "api",
+            "orders",
+            "2"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prueba BFLA rechazada",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code es 403 Forbidden (BFLA Bloqueado)\", function () {\r\n    pm.response.to.have.status(403);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-User-Email",
+            "value": "userA@test.com"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8443/api/admin/audit",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "api",
+            "admin",
+            "audit"
+          ],
+          "query": [
+            {
+              "key": "",
+              "value": "",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prueba BFLA permitida",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code es 200 OK (Acceso Admin)\", function () {\r\n    pm.response.to.have.status(200);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-User-Email",
+            "value": "admin@test.com"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8443/api/admin/audit",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "api",
+            "admin",
+            "audit"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prueba de propiedades MASS assignment",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "X-User-Email",
+            "value": "userA@test.com"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Usuario A Modificado\",\r\n    \"role\": \"admin\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8443/api/profile",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "api",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prueba de esquema rechazado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code es 422 Unprocessable Entity (Esquema Inválido)\", function () {\r\n    pm.response.to.have.status(422);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-User-Email",
+            "value": "userA@test.com"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"product_id\": \"P1\",\r\n    \"quantity\": \"99\",\r\n    \"shipping_address\": \"Direccion corta\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8443/api/orders",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "api",
+            "orders"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prueba de exceso de solicitudes",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-User-Email",
+            "value": "userA@test.com"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer<{{json_web_token_0no2}}>"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8443/api/orders/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "api",
+            "orders",
+            "1"
+          ],
+          "query": [
+            {
+              "key": "X-User-Email",
+              "value": "userA@test.com",
+              "disabled": true
+            },
+            {
+              "key": "Authorization",
+              "value": "Bearer<{{json_web_token_0j87}}>",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "token actualizado",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-User-Email",
+            "value": "userA@test.com",
+            "disabled": true
+          },
+          {
+            "key": "Authorization",
+            "value": "{{bearer_token_1040}}"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8443/api/orders/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "api",
+            "orders",
+            "1"
+          ],
+          "query": [
+            {
+              "key": "X-User-Email",
+              "value": "userA@test.com",
+              "disabled": true
+            },
+            {
+              "key": "Authorization",
+              "value": "Bearer<{{json_web_token_0j87}}>",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prueba puerto 8000 rechazado",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-User-Email",
+            "value": "userA@test.com"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8443/api/orders/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "api",
+            "orders",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prueba GraphQL ok",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"{ orders { id product_id quantity user { name } } }\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8443/graphql",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Prueba GraphQL bad request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code es 400 Bad Request (GraphQL Excesivo)\", function () {\r\n    pm.response.to.have.status(400);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"query\": \"query MyQuery { orders { user { name } } }\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8443/graphql",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8443",
+          "path": [
+            "graphql"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "json_web_token_0zs6",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0j87",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0no2",
+      "secret": true
+    },
+    {
+      "key": "bearer_token_1040",
+      "secret": true
+    }
+  ]
+}
